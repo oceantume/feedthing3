@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Goes back to the previous release, still in the box's idle slot: no rebuild,
+# no upload. Its env comes back with it.
+#
+#   bin/rollback [ssh host]     default: core@box
+# Remote commands carry this side's values on purpose.
+# shellcheck disable=SC2029
+set -euo pipefail
+cd "$(dirname "$0")/.."
+HOST=${1:-core@box}
+APP=$(sed -n 's/^IMAGE=//p' deploy/app.conf)
+
+ssh "$HOST" sudo /opt/bin/app-switch "$APP" --rollback

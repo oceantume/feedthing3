@@ -1,0 +1,7 @@
+# Settings that aren't secret. bin/deploy adds deploy/secrets.enc.yaml's
+# (ANTHROPIC_API_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT
+# if feedthing2 set one; see docs/deploy.md).
+DATABASE_URL=sqlite:///data/feedthing.db
+TZ=America/Toronto
+NO_COLOR=1
+RUST_LOG=feedthing=info,tower_http=info

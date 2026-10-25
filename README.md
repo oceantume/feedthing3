@@ -35,6 +35,12 @@ DATABASE_URL=sqlite://feedthing.db cargo run -- import path/to/feedthing2/app.db
 Copies feeds, items and push subscriptions with their ids, into a database that has no
 feeds yet. The old file is only read. See `docs/deploy.md` for moving production over.
 
+## Deploying
+
+It runs on the box from the infra repo, over the tailnet only, at
+`https://box.<tailnet>.ts.net:8421`: `bin/deploy`. See `docs/deploy.md`, which also covers
+moving production over from feedthing2 on Fly.
+
 ## Checks
 
 ```sh
@@ -61,5 +67,6 @@ cargo test
   `error` gives errors a page, `csrf` turns away cross-site writes, `assets` serves
   `static/` with content-hashed URLs, `health` answers `/healthz`.
 - `migrations/`: SQL, compiled into the binary.
+- `Dockerfile`, `deploy/`, `bin/`: the image and how the box runs it.
 - `static/`: CSS, icons, and the only two scripts: `app.mjs` (the notification bell) and
   `sw.js` (the service worker that shows notifications).

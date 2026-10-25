@@ -1,0 +1,8 @@
+# Who can decrypt the *.enc.yaml files: any one of these keys is enough.
+# When this list changes, run
+# `sops updatekeys <file>` on each encrypted file.
+creation_rules:
+  - path_regex: \.enc\.yaml$
+    age: >-
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDJsuixr/NGcid75/sXy4ww6bePhhYD1pRoLahSPnBuJ,
+      age1dsthvtsp0s6f74xcmhkdrus0pvugnpf2zvflaxefkpcp7egjagfsds77vw

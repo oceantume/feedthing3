@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Deploys the last commit to the box: builds the image here, ships it over SSH
+# (no registry) and has the box switch to it once it's healthy, keeping the
+# previous release for bin/rollback. The box side is /opt/bin/app-switch.
+# From the infra repo's app-kit/; see its docs/operations.md.
+#
+#   bin/deploy [ssh host]     default: core@box
+# Remote commands carry this side's values on purpose.
+# shellcheck disable=SC2029
+set -euo pipefail
+cd "$(dirname "$0")/.."
+HOST=${1:-core@box}
+APP=$(sed -n 's/^IMAGE=//p' deploy/app.conf)
+TAG=$(git rev-parse --short=12 HEAD)
+
+[[ -z $(git status --porcelain) ]] \
+  || { echo "Uncommitted changes: commit first, so the release is a commit." >&2; exit 1; }
+
+# Secrets first: one passphrase prompt, and nothing built if it fails.
+secrets=$(sops decrypt --output-type dotenv deploy/secrets.enc.yaml)
+# Docker env files are one line per value; sops writes a newline as `\n`,
+# which would reach the app as a backslash and an n.
+if grep -q '\\n' <<<"$secrets"; then
+  echo "A secret spans several lines, which Docker env files can't hold." >&2
+  exit 1
+fi
+
+docker build --platform linux/amd64 -t "$APP:$TAG" .
+echo "Sending $APP:$TAG to $HOST"
+docker save "$APP:$TAG" | gzip -1 | ssh "$HOST" docker load
+
+# The box's copy of the app's config, its Caddy site, and the release's env.
+# The env goes live with the new slot only (app-switch), never under the
+# running one.
+ssh "$HOST" "sudo install -d -m 0755 /etc/apps/$APP"
+ssh "$HOST" "sudo sh -c 'cat > /etc/apps/$APP/app.conf'" < deploy/app.conf
+ssh "$HOST" "sudo sh -c 'cat > /etc/apps/$APP/site.caddy'" < deploy/site.caddy
+{ cat deploy/env; echo "$secrets"; } \
+  | ssh "$HOST" "sudo sh -c 'umask 077; cat > /etc/apps/$APP/env.next'"
+
+ssh "$HOST" sudo /opt/bin/app-switch "$APP" "$TAG"
