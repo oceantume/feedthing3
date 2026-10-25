@@ -1,4 +1,6 @@
+mod clock;
 mod config;
+mod feed;
 mod http_client;
 mod web;
 

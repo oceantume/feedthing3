@@ -5,9 +5,11 @@
 mod assets;
 mod csrf;
 mod error;
+mod feeds;
 mod health;
 mod layout;
 mod summary;
+mod time;
 
 use axum::{Router, middleware, routing::get};
 use jiff::tz::TimeZone;
@@ -24,6 +26,7 @@ pub struct AppState {
 pub fn router(state: AppState) -> Router {
     Router::new()
         .merge(summary::routes())
+        .merge(feeds::routes())
         .nest_service("/static", assets::service())
         .layer(middleware::from_fn(csrf::same_origin_writes))
         // A panic answers 500 instead of dropping the connection...

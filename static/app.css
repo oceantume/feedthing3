@@ -315,3 +315,10 @@ button.danger {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
 }
+
+/* ---------- Feeds ---------- */
+
+.feed-link {
+  min-width: 0;
+  text-decoration: none;
+}
