@@ -26,6 +26,15 @@ on startup.
 | `VAPID_SUBJECT` | `mailto:admin@localhost` | How push services can reach you. |
 | `RUST_LOG` | `feedthing=debug,tower_http=info` | |
 
+## Bringing feedthing2's data over
+
+```sh
+DATABASE_URL=sqlite://feedthing.db cargo run -- import path/to/feedthing2/app.db
+```
+
+Copies feeds, items and push subscriptions with their ids, into a database that has no
+feeds yet. The old file is only read. See `docs/deploy.md` for moving production over.
+
 ## Checks
 
 ```sh
@@ -36,7 +45,7 @@ cargo test
 
 ## Layout
 
-- `src/main.rs`: startup, shutdown.
+- `src/main.rs`: startup, shutdown, and the `import` command (`src/import.rs`).
 - `src/config.rs`: settings from the environment.
 - `src/http_client.rs`: the client for every outgoing call.
 - `src/feed.rs`, `src/item.rs`: feeds and their items, and the SQL for them.

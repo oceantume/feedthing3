@@ -4,6 +4,7 @@ mod content;
 mod enrich;
 mod feed;
 mod http_client;
+mod import;
 mod item;
 mod link;
 mod parse;
@@ -14,9 +15,9 @@ mod shutdown;
 mod web;
 mod webpush;
 
-use std::{str::FromStr, time::Duration};
+use std::{path::Path, str::FromStr, time::Duration};
 
-use anyhow::Context;
+use anyhow::{Context, bail};
 use sqlx::{
     SqlitePool,
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions},
@@ -36,6 +37,30 @@ async fn main() -> anyhow::Result<()> {
 
     let config = Config::from_env()?;
     let db = open(&config.database_url).await?;
+
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    match args.as_slice() {
+        [] => serve(config, db).await,
+        [command, source] if command == "import" => {
+            let counts = import::run(&db, Path::new(source)).await?;
+            println!(
+                "Imported {} feed(s), {} item(s) and {} push subscription(s) into {}; {} article(s) cut down to their text.",
+                counts.feeds,
+                counts.items,
+                counts.push_subscriptions,
+                config.database_url,
+                counts.articles
+            );
+            db.close().await;
+            Ok(())
+        }
+        _ => bail!("usage: feedthing [import <feedthing2's app.db>]"),
+    }
+}
+
+/// Runs the app until it's told to stop: the web server, and the scheduler
+/// polling feeds behind it.
+async fn serve(config: Config, db: SqlitePool) -> anyhow::Result<()> {
     let http = http_client::new(config.fetch_timeout);
     let stop = shutdown::on_signal();
     let ai = enrich::Ai::from_env();
