@@ -1,0 +1,18 @@
+{
+  "name": "Feedthing",
+  "short_name": "Feedthing",
+  "description": "A personal, self-hosted feed reader with AI summaries.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1e2226",
+  "theme_color": "#2dacf9",
+  "icons": [
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

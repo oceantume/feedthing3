@@ -1,0 +1,317 @@
+/*
+ * Design tokens come in two layers:
+ *
+ * 1. Theme tokens (--color-*): the only values that change between light and
+ *    dark.
+ * 2. System tokens (type, space, shape): shared by both.
+ *
+ * Component styles below only reference tokens, never raw values.
+ */
+
+/* ---------- Theme ---------- */
+
+:root {
+  --color-bg: #dee2e6;
+  --color-surface: #f0f4f7;
+  --color-text: #313539;
+  --color-text-muted: #5a5f63;
+  --color-text-faint: #94989c;
+  --color-border: #c7ccd1;
+  --color-accent: #2dacf9;
+  --color-danger: #c0392b;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1e2226;
+    --color-surface: #2b2f33;
+    --color-text: #dee2e6;
+    --color-text-muted: #b3b8bc;
+    --color-text-faint: #94989c;
+    --color-border: #3a3f44;
+    --color-danger: #ff6b5e;
+    color-scheme: dark;
+  }
+}
+
+/* ---------- System ---------- */
+
+:root {
+  --font: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-16: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --page-width: 720px;
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font);
+  font-size: var(--text-md);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--color-accent);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-5);
+}
+
+h2 {
+  font-size: var(--text-lg);
+  margin: 0 0 var(--space-4);
+}
+
+h3 {
+  font-size: var(--text-md);
+  margin: 0 0 var(--space-2);
+}
+
+/* ---------- Layout ---------- */
+
+.page {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-5) var(--space-16);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.site-nav-links a {
+  font-size: var(--text-md);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+}
+
+.card + .card,
+.section {
+  margin-top: var(--space-8);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.muted {
+  color: var(--color-text-faint);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.ellipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.danger {
+  color: var(--color-danger);
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+input:not([type="checkbox"]),
+textarea {
+  font: inherit;
+  font-size: var(--text-md);
+  padding: var(--space-2) 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+}
+
+button,
+.button {
+  display: inline-block;
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.danger {
+  color: var(--color-danger);
+}
+
+.field-error {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Items ---------- */
+
+.item-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.item-description {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+
+.tag {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-6);
+}
+
+.content {
+  margin-top: var(--space-6);
+  overflow-wrap: anywhere;
+}
+
+.content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.content pre {
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
