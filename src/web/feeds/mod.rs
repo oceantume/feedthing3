@@ -7,7 +7,7 @@ use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
     response::{IntoResponse, Redirect, Response},
-    routing::get,
+    routing::{get, post},
 };
 use serde::Deserialize;
 
@@ -15,6 +15,7 @@ use super::{AppState, error::AppError};
 use crate::{
     clock,
     feed::{self, Feed, Settings},
+    item,
 };
 
 pub fn routes() -> Router<AppState> {
@@ -22,6 +23,7 @@ pub fn routes() -> Router<AppState> {
         .route("/feeds", get(index).post(create))
         .route("/feeds/{id}", get(show).post(update))
         .route("/feeds/{id}/delete", get(confirm_delete).post(destroy))
+        .route("/feeds/{id}/enrich", post(enrich))
 }
 
 /// `GET /feeds`
@@ -136,6 +138,34 @@ async fn destroy(
     let feed = find(&app, &id).await?;
     feed::delete(&app.db, feed.id).await?;
     Ok(Redirect::to("/feeds").into_response())
+}
+
+/// How many items one backfill summarises at most.
+const BACKFILL_LIMIT: i64 = 200;
+
+/// `POST /feeds/{id}/enrich`
+///
+/// Summarises the feed's newest items that have no summary, then shows the
+/// feed with how many got one. Runs while the request waits: a couple of
+/// hundred items take a few minutes at most.
+async fn enrich(State(app): State<AppState>, Path(id): Path<String>) -> Result<Response, AppError> {
+    let feed = find(&app, &id).await?;
+    let back = |query: String| Redirect::to(&format!("/feeds/{}?{query}", feed.id)).into_response();
+    let Some(ai) = &app.ai else {
+        return Ok(back("ai_unavailable=1".to_owned()));
+    };
+    let items = item::unenriched(&app.db, feed.id, BACKFILL_LIMIT).await?;
+    match ai.enrich(&app.db, &feed.name, &items).await {
+        Ok(done) => Ok(back(format!("enriched={done}"))),
+        Err(err) => {
+            tracing::warn!(
+                feed = feed.id,
+                error = format!("{err:#}"),
+                "backfilling summaries failed"
+            );
+            Ok(back("ai_failed=1".to_owned()))
+        }
+    }
 }
 
 /// An id that isn't a number is as missing as one that isn't there.

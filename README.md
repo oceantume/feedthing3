@@ -19,6 +19,9 @@ on startup.
 | `DATABASE_URL` | `sqlite://feedthing.db` | |
 | `FETCH_TIMEOUT_MS` | `10000` | For each call to a feed or an article page. |
 | `TZ` | `America/Toronto` | Where "today" is, for showing times. |
+| `ANTHROPIC_API_KEY` | | Turns on AI summaries of new items, and the backfill button. |
+| `AI_MODEL` | `claude-opus-5-5` | Must support structured outputs. |
+| `AI_SYSTEM_PROMPT` | see `src/enrich.rs` | Replaces the instructions for summaries and tags. |
 | `RUST_LOG` | `feedthing=debug,tower_http=info` | |
 
 ## Checks
@@ -38,6 +41,7 @@ cargo test
 - `src/parse.rs`: reads RSS 2.0, RSS 1.0, Atom and JSON Feed on top of quick-xml, with
   dates read the forgiving way feeds need.
 - `src/content.rs`: sanitises feed HTML, and cuts an article page down to the article.
+- `src/enrich.rs`: AI descriptions and tags, from Anthropic's Messages API over plain HTTP.
 - `src/poller.rs`: polls one feed, with conditional GET; `src/scheduler.rs` polls what's
   due every 30 seconds and purges expired items daily.
 - `src/web/`: routes, pages and the plumbing they share. `layout` is the page shell,

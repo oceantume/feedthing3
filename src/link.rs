@@ -1,14 +1,10 @@
 //! Where links to an item's original page go. Some sites read better
 //! through a mirror that skips their login wall.
 
-/// The URL to send people to for `url`.
+/// The URL to send people to for `url`. More mirrors chain on with
+/// `.or_else`.
 pub fn outbound(url: &str) -> String {
-    for rewrite in [x_to_xcancel] {
-        if let Some(rewritten) = rewrite(url) {
-            return rewritten;
-        }
-    }
-    url.to_owned()
+    x_to_xcancel(url).unwrap_or_else(|| url.to_owned())
 }
 
 /// x.com and twitter.com (with or without www.) → xcancel.com.

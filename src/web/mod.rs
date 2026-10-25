@@ -17,10 +17,14 @@ use jiff::tz::TimeZone;
 use sqlx::SqlitePool;
 use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
 
+use crate::enrich::Ai;
+
 #[derive(Clone)]
 pub struct AppState {
     pub db: SqlitePool,
     pub tz: TimeZone,
+    /// For backfilling summaries, when configured.
+    pub ai: Option<Ai>,
 }
 
 /// Every route in the app.

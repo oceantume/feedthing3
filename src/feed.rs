@@ -2,7 +2,9 @@
 
 use sqlx::SqlitePool;
 
+/// A whole row, so `SELECT *` reads into it; not every column is shown yet.
 #[derive(Clone, Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct Feed {
     pub id: i64,
     pub url: String,

@@ -1,6 +1,7 @@
 mod clock;
 mod config;
 mod content;
+mod enrich;
 mod feed;
 mod http_client;
 mod item;
@@ -35,16 +36,22 @@ async fn main() -> anyhow::Result<()> {
     let db = open(&config.database_url).await?;
     let http = http_client::new(config.fetch_timeout);
     let stop = shutdown::on_signal();
+    let ai = enrich::Ai::from_env();
+    if ai.is_none() {
+        tracing::info!("ANTHROPIC_API_KEY isn't set: items won't get AI summaries");
+    }
 
     let scheduler = Scheduler {
         db: db.clone(),
         http: http.clone(),
+        ai: ai.clone(),
     }
     .spawn(stop.clone());
 
     let app = web::router(AppState {
         db: db.clone(),
         tz: config.tz.clone(),
+        ai,
     });
 
     let listener = tokio::net::TcpListener::bind(&config.bind).await?;

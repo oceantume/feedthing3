@@ -4,7 +4,9 @@ use sqlx::SqlitePool;
 
 use crate::{clock::DAY_MS, feed::Feed, parse};
 
+/// A whole row, so `SELECT *` reads into it; not every column is shown yet.
 #[derive(Clone, Debug, sqlx::FromRow)]
+#[allow(dead_code)]
 pub struct Item {
     pub id: i64,
     pub feed_id: i64,
@@ -186,6 +188,41 @@ pub async fn set_full_content(
     .bind(content)
     .bind(error)
     .bind(now)
+    .bind(id)
+    .execute(db)
+    .await?;
+    Ok(())
+}
+
+/// A feed's newest items without an AI summary, for a backfill.
+pub async fn unenriched(db: &SqlitePool, feed_id: i64, limit: i64) -> sqlx::Result<Vec<Item>> {
+    sqlx::query_as(
+        "SELECT * FROM items WHERE feed_id = ? AND ai_description IS NULL
+         ORDER BY published_at DESC, id DESC LIMIT ?",
+    )
+    .bind(feed_id)
+    .bind(limit)
+    .fetch_all(db)
+    .await
+}
+
+/// What the AI made of an item, and its share of what that cost in tokens.
+pub async fn set_enrichment(
+    db: &SqlitePool,
+    id: i64,
+    description: &str,
+    tags: &[String],
+    input_tokens: i64,
+    output_tokens: i64,
+) -> anyhow::Result<()> {
+    sqlx::query(
+        "UPDATE items SET ai_description = ?, ai_tags = ?, ai_input_tokens = ?, ai_output_tokens = ?
+         WHERE id = ?",
+    )
+    .bind(description)
+    .bind(serde_json::to_string(tags)?)
+    .bind(input_tokens)
+    .bind(output_tokens)
     .bind(id)
     .execute(db)
     .await?;

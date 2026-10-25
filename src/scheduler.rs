@@ -10,7 +10,9 @@ use sqlx::SqlitePool;
 use tokio::{task::JoinHandle, time::MissedTickBehavior};
 
 use crate::{
-    clock, feed,
+    clock,
+    enrich::Ai,
+    feed,
     item::{self, Item},
     poller::{self, Outcome},
     shutdown,
@@ -23,6 +25,8 @@ const PURGE_EVERY: Duration = Duration::from_secs(24 * 60 * 60);
 pub struct Scheduler {
     pub db: SqlitePool,
     pub http: reqwest::Client,
+    /// Summarises new items, when configured.
+    pub ai: Option<Ai>,
 }
 
 impl Scheduler {
@@ -96,6 +100,15 @@ impl Scheduler {
     /// News from a feed that was polled before: the first poll's backlog
     /// isn't.
     async fn on_new_items(&self, feed: &feed::Feed, items: Vec<Item>) {
-        tracing::debug!(feed = feed.id, count = items.len(), "new items");
+        if let Some(ai) = &self.ai {
+            match ai.enrich(&self.db, &feed.name, &items).await {
+                Ok(done) => tracing::info!(feed = feed.id, "summarised {done} new item(s)"),
+                Err(err) => tracing::warn!(
+                    feed = feed.id,
+                    error = format!("{err:#}"),
+                    "summarising new items failed"
+                ),
+            }
+        }
     }
 }
