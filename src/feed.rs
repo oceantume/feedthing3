@@ -107,6 +107,66 @@ pub async fn update(
     duplicate_url(updated)
 }
 
+/// Enabled feeds whose next poll is due, or that were never polled.
+pub async fn due(db: &SqlitePool, now: i64) -> sqlx::Result<Vec<Feed>> {
+    sqlx::query_as(
+        "SELECT * FROM feeds WHERE enabled AND (next_poll_at IS NULL OR next_poll_at <= ?)
+         ORDER BY id",
+    )
+    .bind(now)
+    .fetch_all(db)
+    .await
+}
+
+/// Books the feed's next poll, if it's still due. False when something else
+/// got to it first, so a feed is never polled twice at once. The next poll is
+/// set before this one runs: a feed that keeps failing is retried on its
+/// usual schedule, not in a tight loop.
+pub async fn claim(db: &SqlitePool, feed: &Feed, now: i64) -> sqlx::Result<bool> {
+    let claimed = sqlx::query(
+        "UPDATE feeds SET next_poll_at = ? + poll_interval_minutes * 60000
+         WHERE id = ? AND (next_poll_at IS NULL OR next_poll_at <= ?)",
+    )
+    .bind(now)
+    .bind(feed.id)
+    .bind(now)
+    .execute(db)
+    .await?;
+    Ok(claimed.rows_affected() == 1)
+}
+
+/// A poll that reached the feed. The validators are what to send next time
+/// (`None` forgets them); a 304 passes the ones it was asked with.
+pub async fn record_poll(
+    db: &SqlitePool,
+    id: i64,
+    now: i64,
+    etag: Option<&str>,
+    last_modified: Option<&str>,
+) -> sqlx::Result<()> {
+    sqlx::query(
+        "UPDATE feeds SET last_polled_at = ?, last_error = NULL, etag = ?, last_modified = ?
+         WHERE id = ?",
+    )
+    .bind(now)
+    .bind(etag)
+    .bind(last_modified)
+    .bind(id)
+    .execute(db)
+    .await?;
+    Ok(())
+}
+
+/// A poll that failed. `last_polled_at` stays at the last one that worked.
+pub async fn record_error(db: &SqlitePool, id: i64, error: &str) -> sqlx::Result<()> {
+    sqlx::query("UPDATE feeds SET last_error = ? WHERE id = ?")
+        .bind(error)
+        .bind(id)
+        .execute(db)
+        .await?;
+    Ok(())
+}
+
 /// Its items go with it.
 pub async fn delete(db: &SqlitePool, id: i64) -> sqlx::Result<()> {
     sqlx::query("DELETE FROM feeds WHERE id = ?")

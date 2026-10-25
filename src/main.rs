@@ -1,7 +1,13 @@
 mod clock;
 mod config;
+mod content;
 mod feed;
 mod http_client;
+mod item;
+mod parse;
+mod poller;
+mod scheduler;
+mod shutdown;
 mod web;
 
 use std::{str::FromStr, time::Duration};
@@ -11,13 +17,9 @@ use sqlx::{
     SqlitePool,
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions},
 };
-use tokio::{
-    signal::unix::{SignalKind, signal},
-    sync::watch,
-};
 use tracing_subscriber::EnvFilter;
 
-use crate::{config::Config, web::AppState};
+use crate::{config::Config, scheduler::Scheduler, web::AppState};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -30,19 +32,26 @@ async fn main() -> anyhow::Result<()> {
 
     let config = Config::from_env()?;
     let db = open(&config.database_url).await?;
+    let http = http_client::new(config.fetch_timeout);
+    let stop = shutdown::on_signal();
+
+    let scheduler = Scheduler {
+        db: db.clone(),
+        http: http.clone(),
+    }
+    .spawn(stop.clone());
 
     let app = web::router(AppState {
         db: db.clone(),
         tz: config.tz.clone(),
     });
 
-    let stopping = stop_signal();
-
     let listener = tokio::net::TcpListener::bind(&config.bind).await?;
     tracing::info!("listening on http://{}", config.bind);
-    let server = axum::serve(listener, app).with_graceful_shutdown(stopped(stopping.clone()));
+    let server =
+        axum::serve(listener, app).with_graceful_shutdown(shutdown::requested(stop.clone()));
     let deadline = async {
-        stopped(stopping.clone()).await;
+        shutdown::requested(stop.clone()).await;
         tokio::time::sleep(SHUTDOWN_GRACE).await;
     };
     tokio::select! {
@@ -53,6 +62,10 @@ async fn main() -> anyhow::Result<()> {
             tracing::warn!("requests still open {SHUTDOWN_GRACE:?} after the stop signal; exiting anyway");
             return Ok(());
         }
+    }
+    // It stops on the same signal; a poll in progress is dropped.
+    if let Err(err) = scheduler.await {
+        tracing::error!(%err, "the scheduler stopped with an error");
     }
     // Checkpoints the WAL into the database file.
     db.close().await;
@@ -79,25 +92,3 @@ async fn open(database_url: &str) -> anyhow::Result<SqlitePool> {
 /// How long requests in flight at shutdown get to finish. The box gives the
 /// whole process 20 seconds before it kills it.
 const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
-
-/// Turns true on Ctrl-C or SIGTERM (what Docker sends). Everything that runs
-/// until shutdown watches it: the server and the scheduler.
-fn stop_signal() -> watch::Receiver<bool> {
-    let (tx, rx) = watch::channel(false);
-    let mut terminate = signal(SignalKind::terminate()).expect("installing the SIGTERM handler");
-    tokio::spawn(async move {
-        tokio::select! {
-            _ = tokio::signal::ctrl_c() => {}
-            _ = terminate.recv() => {}
-        }
-        tracing::info!("shutting down");
-        tx.send_replace(true);
-    });
-    rx
-}
-
-/// Resolves once [`stop_signal`] has fired.
-async fn stopped(mut stopping: watch::Receiver<bool>) {
-    // An error means the sender is gone, which only happens after it fired.
-    let _ = stopping.wait_for(|stop| *stop).await;
-}

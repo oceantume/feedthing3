@@ -1,0 +1,279 @@
+<!-- source: https://lobste.rs/rss  fetched: 2026-03-07T18:53:31.713Z -->
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lobsters</title>
+    <link>https://lobste.rs/</link>
+    <atom:link href="https://lobste.rs/rss" rel="self"/>
+    <description></description>
+    <pubDate>Sat, 07 Mar 2026 03:39:13 -0600</pubDate>
+    <ttl>120</ttl>
+    <item>
+      <title>Lenovo’s New T-Series ThinkPads Score 10/10 for Repairability</title>
+      <link>https://www.ifixit.com/News/115827/new-thinkpads-score-perfect-10-repairability</link>
+      <guid>https://lobste.rs/s/azkace</guid>
+      <author>ifixit.com via Signez</author>
+      <pubDate>Sat, 07 Mar 2026 03:39:13 -0600</pubDate>
+      <comments>https://lobste.rs/s/azkace/lenovo_s_new_t_series_thinkpads_score_10_10</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/azkace/lenovo_s_new_t_series_thinkpads_score_10_10"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>hardware</category>
+    </item>
+    <item>
+      <title>Some Words on WigglyPaint</title>
+      <link>https://beyondloom.com/blog/onwigglypaint.html</link>
+      <guid>https://lobste.rs/s/drtput</guid>
+      <author>beyondloom.com via fleebee</author>
+      <pubDate>Fri, 06 Mar 2026 18:43:00 -0600</pubDate>
+      <comments>https://lobste.rs/s/drtput/some_words_on_wigglypaint</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/drtput/some_words_on_wigglypaint"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>graphics</category>
+    </item>
+    <item>
+      <title>I'm not consulting an LLM</title>
+      <link>https://lr0.org/blog/p/gpt/</link>
+      <guid>https://lobste.rs/s/qorrgl</guid>
+      <author>lr0.org by lr0</author>
+      <pubDate>Fri, 06 Mar 2026 18:30:08 -0600</pubDate>
+      <comments>https://lobste.rs/s/qorrgl/i_m_not_consulting_llm</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/qorrgl/i_m_not_consulting_llm"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>practices</category>
+      <category>vibecoding</category>
+    </item>
+    <item>
+      <title>Pushing and Pulling: Three Reactivity Algorithms</title>
+      <link>https://jonathan-frere.com/posts/reactivity-algorithms/</link>
+      <guid>https://lobste.rs/s/2zk3oe</guid>
+      <author>jonathan-frere.com by Johz</author>
+      <pubDate>Sat, 07 Mar 2026 10:52:29 -0600</pubDate>
+      <comments>https://lobste.rs/s/2zk3oe/pushing_pulling_three_reactivity</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/2zk3oe/pushing_pulling_three_reactivity"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>programming</category>
+    </item>
+    <item>
+      <title>jank is off to a great start in 2026</title>
+      <link>https://jank-lang.org/blog/2026-03-06-great-start/</link>
+      <guid>https://lobste.rs/s/traf1f</guid>
+      <author>jank-lang.org by jeaye</author>
+      <pubDate>Fri, 06 Mar 2026 14:39:27 -0600</pubDate>
+      <comments>https://lobste.rs/s/traf1f/jank_is_off_great_start_2026</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/traf1f/jank_is_off_great_start_2026"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>compilers</category>
+      <category>clojure</category>
+      <category>plt</category>
+    </item>
+    <item>
+      <title>How Apple Used to Design Its Laptops for Repairability</title>
+      <link>https://www.ifixit.com/News/115995/how-apple-used-to-design-its-laptops-for-repairability</link>
+      <guid>https://lobste.rs/s/9o02lu</guid>
+      <author>ifixit.com via msangi</author>
+      <pubDate>Sat, 07 Mar 2026 05:21:36 -0600</pubDate>
+      <comments>https://lobste.rs/s/9o02lu/how_apple_used_design_its_laptops_for</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/9o02lu/how_apple_used_design_its_laptops_for"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>hardware</category>
+    </item>
+    <item>
+      <title>The first AI agent worm is months away, if that</title>
+      <link>https://dustycloud.org/blog/the-first-ai-agent-worm-is-months-away-if-that/</link>
+      <guid>https://lobste.rs/s/osvwbe</guid>
+      <author>dustycloud.org via carlana</author>
+      <pubDate>Fri, 06 Mar 2026 23:34:58 -0600</pubDate>
+      <comments>https://lobste.rs/s/osvwbe/first_ai_agent_worm_is_months_away_if</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/osvwbe/first_ai_agent_worm_is_months_away_if"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>security</category>
+      <category>vibecoding</category>
+    </item>
+    <item>
+      <title>SPA vs. Hypermedia: Real-World Performance Under Load</title>
+      <link>https://zweiundeins.gmbh/en/methodology/spa-vs-hypermedia-real-world-performance-under-load</link>
+      <guid>https://lobste.rs/s/mktb13</guid>
+      <author>zweiundeins.gmbh via TeddyDD</author>
+      <pubDate>Fri, 06 Mar 2026 17:38:43 -0600</pubDate>
+      <comments>https://lobste.rs/s/mktb13/spa_vs_hypermedia_real_world_performance</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/mktb13/spa_vs_hypermedia_real_world_performance"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>web</category>
+    </item>
+    <item>
+      <title>The Internals of PostgreSQL</title>
+      <link>https://www.interdb.jp/pg/</link>
+      <guid>https://lobste.rs/s/upwrm3</guid>
+      <author>interdb.jp via BinaryIgor</author>
+      <pubDate>Sat, 07 Mar 2026 02:47:27 -0600</pubDate>
+      <comments>https://lobste.rs/s/upwrm3/internals_postgresql</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/upwrm3/internals_postgresql"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>databases</category>
+    </item>
+    <item>
+      <title>Usage Specification</title>
+      <link>https://usage.jdx.dev/spec/</link>
+      <guid>https://lobste.rs/s/xndrk0</guid>
+      <author>usage.jdx.dev via pushcx</author>
+      <pubDate>Sat, 07 Mar 2026 11:04:46 -0600</pubDate>
+      <comments>https://lobste.rs/s/xndrk0/usage_specification</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/xndrk0/usage_specification"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>programming</category>
+    </item>
+    <item>
+      <title>EUPL: European Union Public License</title>
+      <link>https://eupl.eu/</link>
+      <guid>https://lobste.rs/s/msjuyz</guid>
+      <author>eupl.eu via mhm</author>
+      <pubDate>Fri, 06 Mar 2026 04:14:35 -0600</pubDate>
+      <comments>https://lobste.rs/s/msjuyz/eupl_european_union_public_license</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/msjuyz/eupl_european_union_public_license"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>law</category>
+    </item>
+    <item>
+      <title>Ply: Build cross-platform apps in Rust</title>
+      <link>https://plyx.iz.rs/blog/introducing-ply/</link>
+      <guid>https://lobste.rs/s/lsk3gq</guid>
+      <author>plyx.iz.rs via robey</author>
+      <pubDate>Fri, 06 Mar 2026 21:52:56 -0600</pubDate>
+      <comments>https://lobste.rs/s/lsk3gq/ply_build_cross_platform_apps_rust</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/lsk3gq/ply_build_cross_platform_apps_rust"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>rust</category>
+      <category>graphics</category>
+    </item>
+    <item>
+      <title>Ki Editor | Multi-cursor structural editor</title>
+      <link>https://ki-editor.org/</link>
+      <guid>https://lobste.rs/s/u8x6xv</guid>
+      <author>ki-editor.org via justinpombrio</author>
+      <pubDate>Sat, 07 Mar 2026 10:03:22 -0600</pubDate>
+      <comments>https://lobste.rs/s/u8x6xv/ki_editor_multi_cursor_structural_editor</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/u8x6xv/ki_editor_multi_cursor_structural_editor"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>editors</category>
+    </item>
+    <item>
+      <title>Mozilla is working on a big Firefox redesign, here is what it looks like</title>
+      <link>https://www.neowin.net/news/mozilla-is-working-on-a-big-firefox-redesign-here-is-what-it-looks-like/</link>
+      <guid>https://lobste.rs/s/lx1wc2</guid>
+      <author>neowin.net via saturnyx</author>
+      <pubDate>Fri, 06 Mar 2026 04:19:42 -0600</pubDate>
+      <comments>https://lobste.rs/s/lx1wc2/mozilla_is_working_on_big_firefox</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/lx1wc2/mozilla_is_working_on_big_firefox"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>design</category>
+      <category>browsers</category>
+    </item>
+    <item>
+      <title>Rewriting Our Database in Rust</title>
+      <link>https://medium.com/airtable-eng/rewriting-our-database-in-rust-f64e37a482ef</link>
+      <guid>https://lobste.rs/s/ekhniu</guid>
+      <author>medium.com via eatonphil</author>
+      <pubDate>Sat, 07 Mar 2026 09:07:02 -0600</pubDate>
+      <comments>https://lobste.rs/s/ekhniu/rewriting_our_database_rust</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/ekhniu/rewriting_our_database_rust"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>databases</category>
+      <category>rust</category>
+      <category>nodejs</category>
+    </item>
+    <item>
+      <title>10% of Firefox crashes are caused by bitflips</title>
+      <link>https://mas.to/@gabrielesvelto/116171750653898304</link>
+      <guid>https://lobste.rs/s/e5vqyc</guid>
+      <author>mas.to via glacambre</author>
+      <pubDate>Fri, 06 Mar 2026 00:33:49 -0600</pubDate>
+      <comments>https://lobste.rs/s/e5vqyc/10_firefox_crashes_are_caused_by_bitflips</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/e5vqyc/10_firefox_crashes_are_caused_by_bitflips"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>hardware</category>
+    </item>
+    <item>
+      <title>ImplicitCAD –  Programmatic CAD in Haskell</title>
+      <link>https://implicitcad.org/</link>
+      <guid>https://lobste.rs/s/nfdkkg</guid>
+      <author>implicitcad.org via injuly</author>
+      <pubDate>Sat, 07 Mar 2026 10:28:12 -0600</pubDate>
+      <comments>https://lobste.rs/s/nfdkkg/implicitcad_programmatic_cad_haskell</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/nfdkkg/implicitcad_programmatic_cad_haskell"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>haskell</category>
+    </item>
+    <item>
+      <title>How to stop fighting with coherence and start writing context-generic trait impls</title>
+      <link>https://contextgeneric.dev/blog/rustlab-2025-coherence</link>
+      <guid>https://lobste.rs/s/jreugl</guid>
+      <author>contextgeneric.dev by soareschen</author>
+      <pubDate>Sat, 07 Mar 2026 07:32:44 -0600</pubDate>
+      <comments>https://lobste.rs/s/jreugl/how_stop_fighting_with_coherence_start</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/jreugl/how_stop_fighting_with_coherence_start"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>video</category>
+      <category>rust</category>
+      <category>plt</category>
+      <category>transcript</category>
+    </item>
+    <item>
+      <title>A new chapter for the Nix language, courtesy of WebAssembly</title>
+      <link>https://determinate.systems/blog/builtins-wasm/</link>
+      <guid>https://lobste.rs/s/uwdjjy</guid>
+      <author>determinate.systems via diktomat</author>
+      <pubDate>Fri, 06 Mar 2026 01:45:11 -0600</pubDate>
+      <comments>https://lobste.rs/s/uwdjjy/new_chapter_for_nix_language_courtesy</comments>
+      <description>&lt;p&gt;See also the &lt;a href="https://determinate.systems/blog/determinate-nix-future" rel="ugc"&gt;release announcement post&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://lobste.rs/s/uwdjjy/new_chapter_for_nix_language_courtesy"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>wasm</category>
+      <category>nix</category>
+    </item>
+    <item>
+      <title>How an IRC bot inspired the creation of cURL</title>
+      <link>https://www.youtube.com/watch?v=ohzzGy5K9Dk</link>
+      <guid>https://lobste.rs/s/tqsgwm</guid>
+      <author>youtube.com via hugoarnal</author>
+      <pubDate>Fri, 06 Mar 2026 15:36:26 -0600</pubDate>
+      <comments>https://lobste.rs/s/tqsgwm/how_irc_bot_inspired_creation_curl</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/tqsgwm/how_irc_bot_inspired_creation_curl"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>video</category>
+      <category>networking</category>
+    </item>
+    <item>
+      <title>NetBird - Open Source Zero Trust Networking</title>
+      <link>https://netbird.io/</link>
+      <guid>https://lobste.rs/s/oual8j</guid>
+      <author>netbird.io via doriancodes</author>
+      <pubDate>Fri, 06 Mar 2026 19:12:37 -0600</pubDate>
+      <comments>https://lobste.rs/s/oual8j/netbird_open_source_zero_trust</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/oual8j/netbird_open_source_zero_trust"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>security</category>
+      <category>networking</category>
+    </item>
+    <item>
+      <title>Editing changes in patch format with Jujutsu</title>
+      <link>https://www.knifepoint.net/~kat/kb-jj-patchedit.html</link>
+      <guid>https://lobste.rs/s/r6hdqf</guid>
+      <author>knifepoint.net via winter</author>
+      <pubDate>Sat, 07 Mar 2026 02:13:46 -0600</pubDate>
+      <comments>https://lobste.rs/s/r6hdqf/editing_changes_patch_format_with</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/r6hdqf/editing_changes_patch_format_with"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>vcs</category>
+    </item>
+    <item>
+      <title>Reflections on vibecoding ticket.el</title>
+      <link>https://blogsystem5.substack.com/p/vibecoding-ticket-el</link>
+      <guid>https://lobste.rs/s/uaavl6</guid>
+      <author>blogsystem5.substack.com by jmmv</author>
+      <pubDate>Fri, 06 Mar 2026 13:40:25 -0600</pubDate>
+      <comments>https://lobste.rs/s/uaavl6/reflections_on_vibecoding_ticket_el</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/uaavl6/reflections_on_vibecoding_ticket_el"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>vibecoding</category>
+    </item>
+    <item>
+      <title>Hardening Firefox with Anthropic’s Red Team</title>
+      <link>https://blog.mozilla.org/en/firefox/hardening-firefox-anthropic-red-team/</link>
+      <guid>https://lobste.rs/s/wxltff</guid>
+      <author>blog.mozilla.org via freddyb</author>
+      <pubDate>Fri, 06 Mar 2026 05:38:35 -0600</pubDate>
+      <comments>https://lobste.rs/s/wxltff/hardening_firefox_with_anthropic_s_red</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/wxltff/hardening_firefox_with_anthropic_s_red"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>security</category>
+      <category>vibecoding</category>
+    </item>
+    <item>
+      <title>Fortify your app: Essential strategies to strengthen security</title>
+      <link>https://www.youtube.com/watch?v=UZeSyodAszc</link>
+      <guid>https://lobste.rs/s/cyvbof</guid>
+      <author>youtube.com by olliej</author>
+      <pubDate>Fri, 06 Mar 2026 16:29:55 -0600</pubDate>
+      <comments>https://lobste.rs/s/cyvbof/fortify_your_app_essential_strategies</comments>
+      <description>&lt;p&gt;&lt;a href="https://lobste.rs/s/cyvbof/fortify_your_app_essential_strategies"&gt;Comments&lt;/a&gt;&lt;/p&gt;</description>
+      <category>video</category>
+      <category>security</category>
+    </item>
+  </channel>
+</rss>

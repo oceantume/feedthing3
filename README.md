@@ -34,6 +34,12 @@ cargo test
 - `src/main.rs`: startup, shutdown.
 - `src/config.rs`: settings from the environment.
 - `src/http_client.rs`: the client for every outgoing call.
+- `src/feed.rs`, `src/item.rs`: feeds and their items, and the SQL for them.
+- `src/parse.rs`: reads RSS 2.0, RSS 1.0, Atom and JSON Feed on top of quick-xml, with
+  dates read the forgiving way feeds need.
+- `src/content.rs`: sanitises feed HTML, and cuts an article page down to the article.
+- `src/poller.rs`: polls one feed, with conditional GET; `src/scheduler.rs` polls what's
+  due every 30 seconds and purges expired items daily.
 - `src/web/`: routes, pages and the plumbing they share. `layout` is the page shell,
   `error` gives errors a page, `csrf` turns away cross-site writes, `assets` serves
   `static/` with content-hashed URLs, `health` answers `/healthz`.
