@@ -20,7 +20,7 @@ on startup.
 | `FETCH_TIMEOUT_MS` | `10000` | For each call to a feed or an article page. |
 | `TZ` | `America/Toronto` | Where "today" is, for showing times. |
 | `ANTHROPIC_API_KEY` | | Turns on AI summaries of new items, and the backfill button. |
-| `AI_MODEL` | `claude-opus-5-5` | Must support structured outputs. |
+| `AI_MODEL` | `claude-haiku-5-5` | Must support structured outputs. |
 | `AI_SYSTEM_PROMPT` | see `src/enrich.rs` | Replaces the instructions for summaries and tags. |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | | Both turn on push notifications. Base64url, as the `web-push` library makes them; reuse feedthing2's so its subscriptions keep working. |
 | `VAPID_SUBJECT` | `mailto:admin@localhost` | How push services can reach you. |

@@ -11,7 +11,9 @@ use sqlx::SqlitePool;
 use crate::item::{self, Item};
 
 const API_VERSION: &str = "2026-10-21";
-const DEFAULT_MODEL: &str = "claude-opus-5-5";
+/// Short descriptions and a few tags are high-volume, simple work: Haiku does
+/// them well at a fraction of a larger model's price.
+const DEFAULT_MODEL: &str = "claude-haiku-5-5";
 /// Items per request.
 const BATCH: usize = 25;
 /// Room for thinking and 25 descriptions.
@@ -19,7 +21,8 @@ const MAX_TOKENS: u32 = 16_000;
 /// A batch can take a minute or two; feeds get far less.
 const TIMEOUT: Duration = Duration::from_secs(180);
 /// Models that accept `fallbacks: "default"`, which reruns a declined
-/// request on another model instead of failing it.
+/// request on another model instead of failing it. Haiku has none: a
+/// declined batch stays unsummarised, and the next backfill retries it.
 const FALLBACK_MODELS: [&str; 4] = [
     "claude-fable-5-1",
     "claude-opus-5-5",
@@ -374,11 +377,27 @@ mod tests {
         assert_eq!(headers["anthropic-version"], API_VERSION);
         assert_eq!(body["model"], DEFAULT_MODEL);
         assert_eq!(body["output_config"]["format"]["type"], "json_schema");
-        assert_eq!(body["fallbacks"], "default");
+        assert_eq!(body["output_config"]["effort"], "low");
+        assert!(body.get("fallbacks").is_none(), "Haiku has no fallback");
+        assert!(headers.get("anthropic-beta").is_none());
         let sent: serde_json::Value =
             serde_json::from_str(body["messages"][0]["content"].as_str().unwrap()).unwrap();
         assert_eq!(sent[0]["title"], "Title one");
         assert_eq!(sent[0]["feed"], "Example");
+    }
+
+    #[tokio::test]
+    async fn asks_models_that_have_one_to_fall_back_when_they_decline() {
+        let db = feed::tests::db().await;
+        let items = two_items(&db).await;
+        let (url, seen) = serve(answer(r#"{"items": []}"#)).await;
+        let mut opus = ai(&url);
+        opus.model = "claude-opus-5-5".to_owned();
+        opus.enrich(&db, "Example", &items).await.unwrap();
+
+        let (headers, body) = &seen.lock().unwrap()[0];
+        assert_eq!(body["fallbacks"], "default");
+        assert_eq!(headers["anthropic-beta"], "server-side-fallback-2026-07-01");
     }
 
     #[tokio::test]
