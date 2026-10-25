@@ -195,6 +195,25 @@ section.card + section.card,
   color: var(--color-danger);
 }
 
+.bell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.bell[data-state="on"] {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.bell[hidden] {
+  display: none;
+}
+
 /* ---------- Forms ---------- */
 
 .field {

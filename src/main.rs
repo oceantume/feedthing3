@@ -8,9 +8,11 @@ mod item;
 mod link;
 mod parse;
 mod poller;
+mod push;
 mod scheduler;
 mod shutdown;
 mod web;
+mod webpush;
 
 use std::{str::FromStr, time::Duration};
 
@@ -40,11 +42,16 @@ async fn main() -> anyhow::Result<()> {
     if ai.is_none() {
         tracing::info!("ANTHROPIC_API_KEY isn't set: items won't get AI summaries");
     }
+    let push = push::Push::from_env()?;
+    if push.is_none() {
+        tracing::info!("VAPID keys aren't set: no push notifications");
+    }
 
     let scheduler = Scheduler {
         db: db.clone(),
         http: http.clone(),
         ai: ai.clone(),
+        push: push.clone(),
     }
     .spawn(stop.clone());
 
@@ -52,6 +59,7 @@ async fn main() -> anyhow::Result<()> {
         db: db.clone(),
         tz: config.tz.clone(),
         ai,
+        push,
     });
 
     let listener = tokio::net::TcpListener::bind(&config.bind).await?;

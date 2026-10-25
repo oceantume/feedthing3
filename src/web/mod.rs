@@ -9,6 +9,7 @@ mod feeds;
 mod health;
 mod items;
 mod layout;
+mod push;
 mod summary;
 mod time;
 
@@ -17,7 +18,7 @@ use jiff::tz::TimeZone;
 use sqlx::SqlitePool;
 use tower_http::{catch_panic::CatchPanicLayer, trace::TraceLayer};
 
-use crate::enrich::Ai;
+use crate::{enrich::Ai, push::Push};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -25,6 +26,8 @@ pub struct AppState {
     pub tz: TimeZone,
     /// For backfilling summaries, when configured.
     pub ai: Option<Ai>,
+    /// For the notification bell, when configured.
+    pub push: Option<Push>,
 }
 
 /// Every route in the app.
@@ -33,6 +36,7 @@ pub fn router(state: AppState) -> Router {
         .merge(summary::routes())
         .merge(feeds::routes())
         .merge(items::routes())
+        .merge(push::routes())
         .nest_service("/static", assets::service())
         .layer(middleware::from_fn(csrf::same_origin_writes))
         // A panic answers 500 instead of dropping the connection...

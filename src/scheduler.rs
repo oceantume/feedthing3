@@ -15,6 +15,7 @@ use crate::{
     feed,
     item::{self, Item},
     poller::{self, Outcome},
+    push::Push,
     shutdown,
 };
 
@@ -27,6 +28,8 @@ pub struct Scheduler {
     pub http: reqwest::Client,
     /// Summarises new items, when configured.
     pub ai: Option<Ai>,
+    /// Tells subscribed browsers about new items, when configured.
+    pub push: Option<Push>,
 }
 
 impl Scheduler {
@@ -100,7 +103,8 @@ impl Scheduler {
     /// News from a feed that was polled before: the first poll's backlog
     /// isn't.
     async fn on_new_items(&self, feed: &feed::Feed, items: Vec<Item>) {
-        if let Some(ai) = &self.ai {
+        let summarise = async {
+            let Some(ai) = &self.ai else { return };
             match ai.enrich(&self.db, &feed.name, &items).await {
                 Ok(done) => tracing::info!(feed = feed.id, "summarised {done} new item(s)"),
                 Err(err) => tracing::warn!(
@@ -109,6 +113,13 @@ impl Scheduler {
                     "summarising new items failed"
                 ),
             }
-        }
+        };
+        let notify = async {
+            let Some(push) = &self.push else { return };
+            if let Err(err) = push.notify_new_items(&self.db, feed, &items).await {
+                tracing::warn!(feed = feed.id, error = format!("{err:#}"), "push failed");
+            }
+        };
+        tokio::join!(summarise, notify);
     }
 }
