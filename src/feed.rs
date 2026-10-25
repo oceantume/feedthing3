@@ -16,7 +16,6 @@ pub struct Feed {
     pub last_error: Option<String>,
     pub etag: Option<String>,
     pub last_modified: Option<String>,
-    pub created_at: i64,
 }
 
 /// What a person sets on a feed.

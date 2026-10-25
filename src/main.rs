@@ -4,6 +4,7 @@ mod content;
 mod feed;
 mod http_client;
 mod item;
+mod link;
 mod parse;
 mod poller;
 mod scheduler;

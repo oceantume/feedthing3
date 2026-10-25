@@ -7,6 +7,7 @@ mod csrf;
 mod error;
 mod feeds;
 mod health;
+mod items;
 mod layout;
 mod summary;
 mod time;
@@ -27,6 +28,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .merge(summary::routes())
         .merge(feeds::routes())
+        .merge(items::routes())
         .nest_service("/static", assets::service())
         .layer(middleware::from_fn(csrf::same_origin_writes))
         // A panic answers 500 instead of dropping the connection...

@@ -22,7 +22,6 @@ pub struct Item {
     pub ai_tags: Option<String>,
     pub ai_input_tokens: Option<i64>,
     pub ai_output_tokens: Option<i64>,
-    pub created_at: i64,
 }
 
 impl Item {
@@ -32,6 +31,99 @@ impl Item {
             .and_then(|tags| serde_json::from_str(tags).ok())
             .unwrap_or_default()
     }
+}
+
+/// An item with the name of its feed, for lists that show both.
+#[derive(Clone, Debug, sqlx::FromRow)]
+pub struct Listed {
+    #[sqlx(flatten)]
+    pub item: Item,
+    pub feed_name: String,
+}
+
+pub const MAX_PAGE: i64 = 100;
+pub const DEFAULT_PAGE: i64 = 50;
+
+/// Which items to list, newest first.
+#[derive(Debug, Default)]
+pub struct Filter<'a> {
+    pub feed_id: Option<i64>,
+    /// Matched against titles, ignoring case.
+    pub search: Option<&'a str>,
+    /// Published at or after, epoch milliseconds.
+    pub since: Option<i64>,
+    /// Published at or before.
+    pub until: Option<i64>,
+    pub limit: i64,
+    pub offset: i64,
+}
+
+pub async fn list(db: &SqlitePool, filter: &Filter<'_>) -> sqlx::Result<Vec<Listed>> {
+    // `%` and `_` in a search mean themselves.
+    let pattern = filter.search.map(|search| {
+        let escaped = search
+            .replace('\\', "\\\\")
+            .replace('%', "\\%")
+            .replace('_', "\\_");
+        format!("%{escaped}%")
+    });
+    sqlx::query_as(
+        "SELECT items.*, feeds.name AS feed_name FROM items JOIN feeds ON feeds.id = items.feed_id
+         WHERE (?1 IS NULL OR items.feed_id = ?1)
+           AND (?2 IS NULL OR items.title LIKE ?2 ESCAPE '\\')
+           AND (?3 IS NULL OR items.published_at >= ?3)
+           AND (?4 IS NULL OR items.published_at <= ?4)
+         ORDER BY items.published_at DESC, items.id DESC
+         LIMIT ?5 OFFSET ?6",
+    )
+    .bind(filter.feed_id)
+    .bind(pattern)
+    .bind(filter.since)
+    .bind(filter.until)
+    .bind(filter.limit.clamp(1, MAX_PAGE))
+    .bind(filter.offset.max(0))
+    .fetch_all(db)
+    .await
+}
+
+pub async fn get(db: &SqlitePool, id: i64) -> sqlx::Result<Option<Listed>> {
+    sqlx::query_as(
+        "SELECT items.*, feeds.name AS feed_name FROM items JOIN feeds ON feeds.id = items.feed_id
+         WHERE items.id = ?",
+    )
+    .bind(id)
+    .fetch_optional(db)
+    .await
+}
+
+/// Items published between `since` and `until`, grouped by feed: feeds by
+/// name, items newest first. At most 1000 in all.
+pub async fn grouped_by_feed(
+    db: &SqlitePool,
+    since: i64,
+    until: i64,
+) -> sqlx::Result<Vec<(String, Vec<Listed>)>> {
+    let items: Vec<Listed> = sqlx::query_as(
+        "SELECT items.*, feeds.name AS feed_name FROM items JOIN feeds ON feeds.id = items.feed_id
+         WHERE items.published_at BETWEEN ? AND ?
+         ORDER BY feeds.name COLLATE NOCASE, feeds.id, items.published_at DESC, items.id DESC
+         LIMIT 1000",
+    )
+    .bind(since)
+    .bind(until)
+    .fetch_all(db)
+    .await?;
+    let mut groups: Vec<(i64, String, Vec<Listed>)> = Vec::new();
+    for listed in items {
+        match groups.last_mut() {
+            Some((feed_id, _, group)) if *feed_id == listed.item.feed_id => group.push(listed),
+            _ => groups.push((listed.item.feed_id, listed.feed_name.clone(), vec![listed])),
+        }
+    }
+    Ok(groups
+        .into_iter()
+        .map(|(_, name, items)| (name, items))
+        .collect())
 }
 
 /// Saves the items the feed doesn't have yet and returns them, oldest
@@ -170,6 +262,93 @@ mod tests {
         assert_eq!(
             stored.iter().map(|i| i.guid.as_str()).collect::<Vec<_>>(),
             ["recent", "undated"]
+        );
+    }
+
+    #[tokio::test]
+    async fn lists_newest_first_with_filters_and_a_literal_search() {
+        let db = feed::tests::db().await;
+        let feed = feed_with(&db, None).await;
+        let mut items = vec![
+            parsed(Some("a"), None, Some(1000)),
+            parsed(Some("b"), None, Some(3000)),
+            parsed(Some("c"), None, None),
+        ];
+        items[0].title = Some("100% Rust".to_owned());
+        items[1].title = Some("1000 Rusty nails".to_owned());
+        store_new(&db, &feed, &items, 0).await.unwrap();
+        let guids =
+            |listed: Vec<Listed>| listed.into_iter().map(|l| l.item.guid).collect::<Vec<_>>();
+
+        let all = list(
+            &db,
+            &Filter {
+                limit: 10,
+                ..Filter::default()
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(all[0].feed_name, "Example");
+        assert_eq!(guids(all), ["b", "a", "c"], "undated last");
+
+        let search = |q| Filter {
+            search: Some(q),
+            limit: 10,
+            ..Filter::default()
+        };
+        assert_eq!(guids(list(&db, &search("rust")).await.unwrap()), ["b", "a"]);
+        assert_eq!(guids(list(&db, &search("0%")).await.unwrap()), ["a"]);
+
+        let window = Filter {
+            since: Some(2000),
+            limit: 10,
+            ..Filter::default()
+        };
+        assert_eq!(guids(list(&db, &window).await.unwrap()), ["b"]);
+        let page = Filter {
+            limit: 1,
+            offset: 1,
+            ..Filter::default()
+        };
+        assert_eq!(guids(list(&db, &page).await.unwrap()), ["a"]);
+    }
+
+    #[tokio::test]
+    async fn groups_recent_items_by_feed_name() {
+        let db = feed::tests::db().await;
+        let mut zed = settings("https://z.example/rss");
+        zed.name = "zed".to_owned();
+        let zed = feed::create(&db, &zed, 0).await.unwrap().unwrap();
+        let zed = feed::get(&db, zed).await.unwrap().unwrap();
+        let alpha = feed_with(&db, None).await;
+        store_new(&db, &zed, &[parsed(Some("z1"), None, Some(500))], 0)
+            .await
+            .unwrap();
+        store_new(
+            &db,
+            &alpha,
+            &[
+                parsed(Some("a1"), None, Some(100)),
+                parsed(Some("a2"), None, Some(900)),
+                parsed(Some("old"), None, Some(1)),
+            ],
+            0,
+        )
+        .await
+        .unwrap();
+
+        let groups = grouped_by_feed(&db, 50, 1000).await.unwrap();
+        let shape: Vec<(String, Vec<String>)> = groups
+            .into_iter()
+            .map(|(name, items)| (name, items.into_iter().map(|l| l.item.guid).collect()))
+            .collect();
+        assert_eq!(
+            shape,
+            [
+                ("Example".to_owned(), vec!["a2".to_owned(), "a1".to_owned()]),
+                ("zed".to_owned(), vec!["z1".to_owned()]),
+            ]
         );
     }
 
