@@ -1,12 +1,10 @@
 # Feedthing's site in Caddy on the box, uploaded by bin/deploy.
 #
-# Tailnet only: Caddy listens on 127.0.0.1, and `tailscale serve` publishes it
-# as https://box.<tailnet>.ts.net:8421 with the box's Tailscale certificate,
-# like Netdata's dashboard (infra repo, docs/operations.md). HTTPS matters:
+# Tailnet only: `import tailnet` drops anything not from a tailnet address
+# (infra repo, docs/operations.md, "Tailnet-only apps"). HTTPS matters:
 # browsers only allow service workers, and so push notifications, on it.
-http://:19921 {
-	bind 127.0.0.1
+feedthing.ts.oceantume.dev {
+	import tailnet
 	encode zstd gzip
-	# Slot ports from deploy/app.conf, the app's name, its health check.
-	import app 4021 4022 feedthing /healthz
+	import app-feedthing
 }
