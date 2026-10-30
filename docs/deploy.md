@@ -1,21 +1,21 @@
 # Deploying
 
 The app runs on the box, reachable only over the tailnet at
-`https://box.<tailnet>.ts.net:8421`. It runs in two slots behind Caddy: one serves, the other
-keeps the previous release for rollback. `tailscale serve` terminates HTTPS with the box's
-Tailscale certificate and hands requests to Caddy on `127.0.0.1:19921`, like Netdata's
-dashboard. HTTPS isn't optional: browsers only allow service workers, and so push
-notifications, on it. The SQLite database is in `/var/lib/apps/feedthing` on the box, mounted
-at `/data`.
+`https://feedthing.ts.oceantume.dev`. It runs in two slots behind Caddy: one serves, the other
+keeps the previous release for rollback. Caddy drops any connection not from a tailnet
+address and serves the box's wildcard `*.ts.oceantume.dev` certificate. HTTPS isn't optional:
+browsers only allow service workers, and so push notifications, on it. The SQLite database is
+in `/var/lib/apps/feedthing` on the box, mounted at `/data`.
 
-The box itself (Flatcar, Tailscale, Caddy, the slot machinery) is set up from the `infra`
-repo; this repo holds what's specific to Feedthing:
+The box itself (Flatcar, Tailscale, Caddy, the slot machinery, the DNS and certificate for
+tailnet-only apps) is set up from the `infra` repo; see "Tailnet-only apps" in its
+`docs/operations.md`. This repo holds what's specific to Feedthing:
 
 - `Dockerfile`: the image.
-- `deploy/app.conf`: how the box runs it (port, slot ports 4021/4022, health check, memory).
-- `deploy/site.caddy`: its site in Caddy, on 127.0.0.1 only.
+- `deploy/app.conf`: how the box runs it (port, health check, memory). The box chooses the
+  slot ports.
+- `deploy/site.caddy`: its site in Caddy, tailnet only.
 - `deploy/env`: settings that aren't secret; `deploy/secrets.enc.yaml`: the secrets (sops).
-- `bin/deploy`, `bin/rollback`, `bin/status`: copies of `infra/app-kit/bin/`.
 
 - [Before the first deploy](#before-the-first-deploy)
 - [Secrets](#secrets)
@@ -34,11 +34,10 @@ your SSH agent (`ssh-add ~/.ssh/id_ed25519_infra`) and point sops at it:
 export SOPS_AGE_SSH_PRIVATE_KEY_FILE=~/.ssh/id_ed25519_infra
 ```
 
-The box publishes the site to the tailnet; see "Tailnet-only apps" in the infra repo's
-`docs/operations.md`. On a box installed before that was added, once:
+Deploys run through the infra repo's `box` command, linked onto your PATH once:
 
 ```sh
-ssh core@box sudo tailscale serve --bg --https=8421 http://127.0.0.1:19921
+ln -s ~/devel/@oceantume/infra/app-kit/box ~/.local/bin/box
 ```
 
 ## Secrets
@@ -59,12 +58,12 @@ browsers subscribed with them, and new keys mean subscribing every browser again
 ## Deploying
 
 ```sh
-bin/deploy      # the last commit, live once healthy
-bin/rollback    # back to the previous release, in seconds
-bin/status      # the two slots: which is live, their commits, their health
+box deploy      # the last commit, live once healthy
+box rollback    # back to the previous release, in seconds
+box status      # the two slots: which is live, their commits, their health
 ```
 
-`bin/deploy` builds the image from the working tree, which must be committed: the image is
+`box deploy` builds the image from the working tree, which must be committed: the image is
 tagged with the commit. It ships the image over SSH and has the box start it in the idle
 slot. Once that slot answers `/healthz`, traffic moves to it and the old one stops. The
 scheduler runs in whichever slot is live; a poll the old slot had in progress is dropped,
@@ -80,7 +79,7 @@ and the feed is polled again on its next turn.
 ## Logs
 
 ```sh
-ssh core@box journalctl -t feedthing.a -f           # the app, slot a (or .b: see bin/status)
+ssh core@box journalctl -t feedthing.a -f           # the app, slot a (or .b: see box status)
 ssh core@box journalctl -u app@feedthing.a          # its starts, stops, crashes
 ssh core@box tail -f /var/log/caddy/feedthing.log   # requests, as JSON
 ```
@@ -120,8 +119,8 @@ keeps running on Fly until the last step.
    git add deploy/secrets.enc.yaml && git commit -m "Add the secrets from Fly"
    ```
 
-2. **Deploy to the box** (`bin/deploy`) and check it on its own, before moving any data: open
-   `https://box.<tailnet>.ts.net:8421`, add a feed, see it polled.
+2. **Deploy to the box** (`box deploy`) and check it on its own, before moving any data: open
+   `https://feedthing.ts.oceantume.dev`, add a feed, see it polled.
 
 3. **Copy and import the database.** Items that come in on Fly after the copy are fetched
    again by the box's first polls, as long as they're still in their feeds. feedthing2's
@@ -142,7 +141,7 @@ keeps running on Fly until the last step.
    ssh core@box 'sudo systemctl stop app@feedthing.$(cat /etc/apps/feedthing/active)'
    ssh core@box 'sudo sh -c "rm -f /var/lib/apps/feedthing/feedthing.db* && cat > /var/lib/apps/feedthing/feedthing.db && chown 65532:65532 /var/lib/apps/feedthing/feedthing.db"' < feedthing.db
    ssh core@box 'sudo systemctl start app@feedthing.$(cat /etc/apps/feedthing/active)'
-   bin/status
+   box status
    ```
 
 4. **Subscribe each browser again** from the bell at the box's address. Until then, the

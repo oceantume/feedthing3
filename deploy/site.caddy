@@ -1,4 +1,4 @@
-# Feedthing's site in Caddy on the box, uploaded by bin/deploy.
+# Feedthing's site in Caddy on the box, uploaded by box deploy.
 #
 # Tailnet only: `import tailnet` drops anything not from a tailnet address
 # (infra repo, docs/operations.md, "Tailnet-only apps"). HTTPS matters:
