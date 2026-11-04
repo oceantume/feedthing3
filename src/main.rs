@@ -18,6 +18,7 @@ mod webpush;
 use std::{path::Path, str::FromStr, time::Duration};
 
 use anyhow::{Context, bail};
+use axum::serve::ListenerExt;
 use sqlx::{
     SqlitePool,
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions},
@@ -88,6 +89,13 @@ async fn serve(config: Config, db: SqlitePool) -> anyhow::Result<()> {
     });
 
     let listener = tokio::net::TcpListener::bind(&config.bind).await?;
+    // No Nagle: hyper writes a static file's headers and body separately, and
+    // the body would wait ~40 ms for Caddy's delayed ACK of the headers.
+    let listener = listener.tap_io(|tcp| {
+        if let Err(error) = tcp.set_nodelay(true) {
+            tracing::warn!("couldn't set TCP_NODELAY: {error}");
+        }
+    });
     tracing::info!("listening on http://{}", config.bind);
     let server =
         axum::serve(listener, app).with_graceful_shutdown(shutdown::requested(stop.clone()));
