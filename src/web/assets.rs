@@ -1,20 +1,10 @@
-//! Static files, held in memory and linked with content-hashed URLs so
-//! browsers can cache them for good: when a file changes, its URL changes.
-
-use std::{
-    borrow::Cow,
-    collections::HashMap,
-    fs,
-    hash::{DefaultHasher, Hasher},
-    io,
-    path::Path,
-    sync::OnceLock,
-};
+//! Static files, built into the binary and linked with content-hashed URLs
+//! so browsers can cache them for good: when a file changes, its URL changes.
 
 use axum::{
     Router,
     body::Bytes,
-    extract::{Path as UrlPath, RawQuery},
+    extract::{Path, RawQuery},
     http::{HeaderMap, StatusCode, header},
     response::{IntoResponse, Response},
     routing::get,
@@ -22,65 +12,50 @@ use axum::{
 
 const DIR: &str = "static";
 
-#[derive(Clone)]
 struct Asset {
-    bytes: Bytes,
+    name: &'static str,
+    bytes: &'static [u8],
     /// A hash of `bytes`: the `v` in its URL, and its ETag.
-    version: String,
-    content_type: &'static str,
+    version: u64,
 }
 
-/// Every file in `static/`, read by `load`. Release builds only.
-static ASSETS: OnceLock<HashMap<String, Asset>> = OnceLock::new();
+/// A file in `static/`, hashed while compiling.
+macro_rules! asset {
+    ($name:literal) => {{
+        const BYTES: &[u8] = include_bytes!(concat!("../../static/", $name));
+        Asset {
+            name: $name,
+            bytes: BYTES,
+            version: fnv1a(BYTES),
+        }
+    }};
+}
 
-/// Reads `static/`, before the app serves anything: no request waits on the
-/// disk, and a release missing its files doesn't start. Debug builds read it
-/// again on every use, so an edited file shows up on refresh without a
-/// restart.
-pub fn load() -> io::Result<()> {
-    let assets = read_all(Path::new(DIR))?;
-    if !cfg!(debug_assertions) {
-        ASSETS.set(assets).ok();
+/// Every file in `static/`: a file added there needs a line here.
+static ASSETS: &[Asset] = &[
+    asset!("app.css"),
+    asset!("app.mjs"),
+    asset!("favicon.svg"),
+    asset!("manifest.json"),
+    asset!("sw.js"),
+];
+
+/// FNV-1a: tiny, and a `const fn`, so the compiler runs it. Only needs to
+/// change when the contents do.
+const fn fnv1a(bytes: &[u8]) -> u64 {
+    let mut hash: u64 = 0xcbf29ce484222325;
+    let mut i = 0;
+    while i < bytes.len() {
+        hash = (hash ^ bytes[i] as u64).wrapping_mul(0x100000001b3);
+        i += 1;
     }
-    Ok(())
+    hash
 }
 
-/// Borrowed from what `load` read, or, in debug builds, freshly read.
-fn get_asset(name: &str) -> Option<Cow<'static, Asset>> {
-    if cfg!(debug_assertions) {
-        read_all(Path::new(DIR)).ok()?.remove(name).map(Cow::Owned)
-    } else {
-        let assets = ASSETS.get().expect("assets::load runs at startup");
-        assets.get(name).map(Cow::Borrowed)
-    }
-}
-
-/// Every file in `dir`, by name. Looking files up by name in here, rather
-/// than joining a requested path onto `dir`, keeps `../` out.
-fn read_all(dir: &Path) -> io::Result<HashMap<String, Asset>> {
-    let mut assets = HashMap::new();
-    for entry in fs::read_dir(dir)?.flatten() {
-        // Skips folders, which `fs::read` refuses.
-        let (Ok(name), Ok(bytes)) = (entry.file_name().into_string(), fs::read(entry.path()))
-        else {
-            continue;
-        };
-        let asset = Asset {
-            version: version_of(&bytes),
-            content_type: content_type(&name),
-            bytes: bytes.into(),
-        };
-        assets.insert(name, asset);
-    }
-    Ok(assets)
-}
-
-fn version_of(bytes: &[u8]) -> String {
-    // Only needs to change when the contents do; stability across Rust
-    // versions doesn't matter for cache busting.
-    let mut hasher = DefaultHasher::new();
-    hasher.write(bytes);
-    format!("{:016x}", hasher.finish())
+/// Looking files up by name in here, rather than reading a requested path
+/// from disk, keeps `../` out.
+fn get_asset(name: &str) -> Option<&'static Asset> {
+    ASSETS.iter().find(|asset| asset.name == name)
 }
 
 /// The types of what's in `static/`.
@@ -100,7 +75,7 @@ pub fn url(name: &str) -> String {
         tracing::warn!(name, "static file missing");
         return format!("/{DIR}/{name}?v=missing");
     };
-    format!("/{DIR}/{name}?v={}", asset.version)
+    format!("/{DIR}/{name}?v={:016x}", asset.version)
 }
 
 /// Serves `static/`.
@@ -112,11 +87,7 @@ pub fn service() -> Router {
 ///
 /// Versioned URLs never change content, so they're cached for a year without
 /// revalidation. Anything else is revalidated on every use.
-async fn file(
-    UrlPath(name): UrlPath<String>,
-    RawQuery(query): RawQuery,
-    headers: HeaderMap,
-) -> Response {
+async fn file(Path(name): Path<String>, RawQuery(query): RawQuery, headers: HeaderMap) -> Response {
     let versioned = query.is_some_and(|q| q.split('&').any(|pair| pair.starts_with("v=")));
     let cache_control = if versioned {
         "public, max-age=31536000, immutable"
@@ -132,7 +103,7 @@ pub fn respond(name: &str, request: &HeaderMap, cache_control: &'static str) -> 
     let Some(asset) = get_asset(name) else {
         return StatusCode::NOT_FOUND.into_response();
     };
-    let etag = format!("\"{}\"", asset.version);
+    let etag = format!("\"{:016x}\"", asset.version);
     let current = request
         .get(header::IF_NONE_MATCH)
         .and_then(|tags| tags.to_str().ok())
@@ -150,9 +121,8 @@ pub fn respond(name: &str, request: &HeaderMap, cache_control: &'static str) -> 
     }
     (
         headers,
-        [(header::CONTENT_TYPE, asset.content_type)],
-        // A handle on the same bytes, not a copy.
-        asset.bytes.clone(),
+        [(header::CONTENT_TYPE, content_type(name))],
+        Bytes::from_static(asset.bytes),
     )
         .into_response()
 }
@@ -165,20 +135,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn version_changes_with_contents() {
-        let dir = std::env::temp_dir().join(format!("feedthing-assets-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let file = dir.join("a.css");
-        let version = || read_all(&dir).unwrap().remove("a.css").unwrap().version;
-
-        std::fs::write(&file, "body { color: red }").unwrap();
-        let first = version();
-        assert_eq!(version(), first, "stable for the same contents");
-
-        std::fs::write(&file, "body { color: blue }").unwrap();
-        assert_ne!(version(), first, "changes with the contents");
-
-        std::fs::remove_dir_all(&dir).unwrap();
+    fn has_every_file_in_static() {
+        for entry in std::fs::read_dir(DIR).unwrap() {
+            let name = entry.unwrap().file_name().into_string().unwrap();
+            assert!(
+                get_asset(&name).is_some(),
+                "static/{name} needs a line in ASSETS"
+            );
+        }
     }
 
     async fn get(uri: &str, if_none_match: Option<&str>) -> Response {

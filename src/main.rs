@@ -72,7 +72,6 @@ async fn serve(config: Config, db: SqlitePool) -> anyhow::Result<()> {
     if push.is_none() {
         tracing::info!("VAPID keys aren't set: no push notifications");
     }
-    web::assets::load().context("reading static/")?;
 
     let scheduler = Scheduler {
         db: db.clone(),

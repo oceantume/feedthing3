@@ -10,14 +10,12 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     cargo build --release --locked && cp target/release/feedthing /feedthing
 RUN mkdir /data
 
-# Runtime: the binary and the static files it serves from `static/`, on a
-# distroless base: glibc, libgcc, CA certificates (outgoing TLS reads the
-# system trust store) and the time zone database (TZ), no shell. Migrations
-# are compiled into the binary.
+# Runtime: the binary, on a distroless base: glibc, libgcc, CA certificates
+# (outgoing TLS reads the system trust store) and the time zone database (TZ),
+# no shell. Migrations and the files in `static/` are compiled into the binary.
 FROM gcr.io/distroless/cc-debian13:nonroot
 WORKDIR /app
 COPY --from=build /feedthing /app/feedthing
-COPY static /app/static
 # Owned by nonroot so the volume mounted here starts out writable.
 COPY --from=build --chown=nonroot:nonroot /data /data
 ENV BIND=0.0.0.0:8080

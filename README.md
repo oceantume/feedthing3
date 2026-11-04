@@ -69,4 +69,4 @@ cargo test
 - `migrations/`: SQL, compiled into the binary.
 - `Dockerfile`, `deploy/`: the image and how the box runs it.
 - `static/`: CSS, icons, and the only two scripts: `app.mjs` (the notification bell) and
-  `sw.js` (the service worker that shows notifications).
+  `sw.js` (the service worker that shows notifications). They're compiled into the binary.
