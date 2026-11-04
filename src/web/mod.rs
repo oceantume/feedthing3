@@ -2,7 +2,7 @@
 //! turn requests into domain calls and render the results; SQL lives in the
 //! domain modules, not here.
 
-mod assets;
+pub mod assets;
 mod csrf;
 mod error;
 mod feeds;

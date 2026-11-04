@@ -72,6 +72,7 @@ async fn serve(config: Config, db: SqlitePool) -> anyhow::Result<()> {
     if push.is_none() {
         tracing::info!("VAPID keys aren't set: no push notifications");
     }
+    web::assets::load().context("reading static/")?;
 
     let scheduler = Scheduler {
         db: db.clone(),
@@ -89,8 +90,8 @@ async fn serve(config: Config, db: SqlitePool) -> anyhow::Result<()> {
     });
 
     let listener = tokio::net::TcpListener::bind(&config.bind).await?;
-    // No Nagle: hyper writes a static file's headers and body separately, and
-    // the body would wait ~40 ms for Caddy's delayed ACK of the headers.
+    // No Nagle: hyper batches its own writes, and a body streamed after its
+    // headers would wait ~40 ms for Caddy's delayed ACK of them.
     let listener = listener.tap_io(|tcp| {
         if let Err(error) = tcp.set_nodelay(true) {
             tracing::warn!("couldn't set TCP_NODELAY: {error}");

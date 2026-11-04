@@ -4,14 +4,14 @@
 use axum::{
     Json, Router,
     extract::State,
-    http::{StatusCode, header},
+    http::{HeaderMap, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
 };
 use serde::Deserialize;
 use serde_json::json;
 
-use super::{AppState, error::AppError};
+use super::{AppState, assets, error::AppError};
 use crate::{clock, push};
 
 pub fn routes() -> Router<AppState> {
@@ -25,16 +25,8 @@ pub fn routes() -> Router<AppState> {
 ///
 /// From the root, so it controls the whole app. Revalidated on every load:
 /// browsers check it for updates themselves.
-async fn service_worker() -> Result<Response, AppError> {
-    let script = tokio::fs::read("static/sw.js").await?;
-    Ok((
-        [
-            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
-            (header::CACHE_CONTROL, "no-cache"),
-        ],
-        script,
-    )
-        .into_response())
+async fn service_worker(headers: HeaderMap) -> Response {
+    assets::respond("sw.js", &headers, "no-cache")
 }
 
 /// `GET /push/vapid-public-key`
