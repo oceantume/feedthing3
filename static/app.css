@@ -211,7 +211,8 @@ section.card + section.card,
 }
 
 .bell[hidden] {
-  display: none;
+  /* Keeps its space, so the page doesn't shift when app.mjs shows it. */
+  visibility: hidden;
 }
 
 /* ---------- Forms ---------- */
